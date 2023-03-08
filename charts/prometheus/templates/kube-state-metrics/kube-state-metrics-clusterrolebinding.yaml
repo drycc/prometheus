@@ -1,0 +1,19 @@
+{{- if eq .Values.global.prometheusLocation "on-cluster" }}
+{{- if (index .Values "kube-state-metrics" "enabled") }}
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: {{ printf "%s:kube-state-metrics" .Release.Namespace | quote }}
+  labels:
+    app: drycc-kube-state-metrics
+    heritage: drycc
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ printf "%s:drycc-kube-state-metrics" .Release.Namespace | quote }}
+subjects:
+- kind: ServiceAccount
+  name: drycc-kube-state-metrics
+  namespace: {{ .Release.Namespace }}
+{{- end -}}
+{{- end -}}

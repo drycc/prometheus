@@ -1,0 +1,102 @@
+{{- if eq .Values.global.prometheusLocation "on-cluster" }}
+{{- $platformDomain := .Values.global.platformDomain }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: drycc-prometheus
+  labels:
+    heritage: drycc
+  annotations:
+    component.drycc.cc/version: {{ .Values.imageTag }}
+spec:
+  serviceName: drycc-prometheus-headless
+  replicas: {{ index .Values "prometheus-server" "replicas" }}
+  selector:
+    matchLabels:
+      app: drycc-prometheus
+  template:
+    metadata:
+      labels:
+        app: drycc-prometheus
+    spec:
+      serviceAccount: drycc-prometheus
+      affinity:
+        podAffinity: {{- include "common.affinities.pods" (dict "type" ( index .Values "prometheus-server" "podAffinityPreset" "type") "key" ( index .Values "prometheus-server" "podAffinityPreset" "key") "values" ( index .Values "prometheus-server" "podAffinityPreset" "values" ) ) | nindent 10 }}
+        podAntiAffinity: {{- include "common.affinities.pods" (dict "type" ( index .Values "prometheus-server" "podAntiAffinityPreset" "type") "key" ( index .Values "prometheus-server" "podAntiAffinityPreset" "key") "values" ( index .Values "prometheus-server" "podAntiAffinityPreset" "values" ) ) | nindent 10 }}
+        nodeAffinity: {{- include "common.affinities.nodes" (dict "type" ( index .Values "prometheus-server" "nodeAffinityPreset" "type") "key" ( index .Values "prometheus-server" "nodeAffinityPreset" "key") "values" ( index .Values "prometheus-server" "nodeAffinityPreset" "values" ) ) | nindent 10 }}
+      containers:
+      - name: drycc-prometheus
+        image: {{ .Values.imageRegistry }}/{{ .Values.imageOrg }}/prometheus:{{ .Values.imageTag }}
+        imagePullPolicy: {{.Values.imagePullPolicy}}
+        args:
+          - prometheus
+          - --web.route-prefix=/
+          - --storage.tsdb.retention.time={{ index .Values "prometheus-server" "retention" }}
+          - --config.file=/opt/drycc/prometheus/config/prometheus.yaml
+          - --storage.tsdb.path=/data
+          - --web.console.libraries=/opt/drycc/console_libraries
+          - --web.console.templates=/opt/drycc/prometheus/consoles
+          {{- range (index .Values "prometheus-server" "extraFlags" ) }}
+          - --{{ . }}
+          {{- end }}
+          {{- range $key, $value := (index .Values "prometheus-server" "extraArgs" ) }}
+          - --{{ $key }}={{ $value }}
+          {{- end }}
+          {{- if .Values.global.certManagerEnabled }}
+          - --web.external-url=https://drycc-prometheus.{{ $platformDomain }}
+          {{- else }}
+          - --web.external-url=http://drycc-prometheus.{{ $platformDomain }}
+          {{- end }}
+        livenessProbe:
+          failureThreshold: 10
+          httpGet:
+            path: /-/healthy
+            port: web
+            scheme: HTTP
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 3
+        ports:
+        - containerPort: 9090
+          name: web
+          protocol: TCP
+        readinessProbe:
+          failureThreshold: 10
+          httpGet:
+            path: /-/ready
+            port: web
+            scheme: HTTP
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 3
+        resources: {}
+        startupProbe:
+          failureThreshold: 60
+          httpGet:
+            path: /-/ready
+            port: web
+            scheme: HTTP
+          periodSeconds: 15
+          successThreshold: 1
+          timeoutSeconds: 3
+  {{- if not (index .Values "prometheus-server" "persistence" "enabled") }}
+        - name: prometheus-data
+          emptyDir: {}
+  {{- else }}
+  volumeClaimTemplates:
+  - metadata:
+      name: prometheus-data
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      {{- if (index .Values "prometheus-server" "persistence" "storageClass") }}
+      {{- if (eq "-" (index .Values "prometheus-server" "persistence" "storageClass")) }}
+      storageClassName: ""
+      {{- else }}
+      storageClassName: "{{ (index .Values "prometheus-server" "persistence" "storageClass") }}"
+      {{- end }}
+      {{- end }}
+      resources:
+        requests:
+          storage: {{ (index .Values "prometheus-server" "persistence" "size") | quote }}
+  {{- end }}
+{{- end }}
