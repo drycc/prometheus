@@ -1,11 +1,11 @@
-FROM registry.drycc.cc/drycc/base:bullseye
+FROM registry.drycc.cc/drycc/base:bookworm
 
 ENV DRYCC_UID=1001 \
   DRYCC_GID=1001 \
   DRYCC_HOME_DIR=/data \
-  PROMETHEUS_VERSION="2.40.3" \
-  NODE_EXPORTER_VERSION="1.4.0" \
-  KUBE_STATE_METRICS="2.7.0"
+  PROMETHEUS_VERSION="2.44.0" \
+  NODE_EXPORTER_VERSION="1.6.0" \
+  KUBE_STATE_METRICS="2.9.2"
 
 RUN groupadd drycc --gid ${DRYCC_GID} \
   && useradd drycc -u ${DRYCC_UID} -g ${DRYCC_GID} -s /bin/bash -m -d ${DRYCC_HOME_DIR} \
