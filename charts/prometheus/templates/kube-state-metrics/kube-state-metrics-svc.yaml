@@ -1,5 +1,5 @@
 {{- if eq .Values.global.prometheusLocation "on-cluster" }}
-{{- if (index .Values "kube-state-metrics" "enabled") }}
+{{- if (index .Values "kubeStateMetrics" "enabled") }}
 apiVersion: v1
 kind: Service
 metadata:
@@ -8,7 +8,7 @@ metadata:
     prometheus.io/scrape: "true"
     prometheus.io/path: "/metrics"
     prometheus.io/port: "8080"
-    {{- with index .Values "kube-state-metrics" "service" "annotations" }}
+    {{- with index .Values "kubeStateMetrics" "service" "annotations" }}
     {{- toYaml . | nindent 4 }}
     {{- end }}
   labels:

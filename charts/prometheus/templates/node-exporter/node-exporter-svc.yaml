@@ -1,5 +1,5 @@
 {{- if eq .Values.global.prometheusLocation "on-cluster" }}
-{{- if (index .Values "node-exporter" "enabled") }}
+{{- if (index .Values "nodeExporter" "enabled") }}
 apiVersion: v1
 kind: Service
 metadata:
@@ -8,7 +8,7 @@ metadata:
     prometheus.io/scrape: "true"
     prometheus.io/path: "/metrics"
     prometheus.io/port: "9100"
-    {{- with (index .Values "node-exporter" "annotations") }}
+    {{- with (index .Values "nodeExporter" "annotations") }}
     {{- toYaml . | nindent 4 }}
     {{- end }}
   labels:

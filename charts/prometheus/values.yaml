@@ -4,7 +4,7 @@ imageTag: "canary"
 imageRegistry: "registry.drycc.cc"
 
 ## prometheus-server configuration##
-prometheus-server:
+prometheusServer:
   replicas: 1
   retention: 15d
   # persistence config
@@ -33,22 +33,20 @@ prometheus-server:
     values:
     - "true"
   podAffinityPreset:
-    key: "security"
     type: ""
-    values:
-    - "drycc-security"
+    extraMatchLabels:
+      security: "drycc-security"
   podAntiAffinityPreset:
-    key: "app"
     type: "soft"
-    values:
-    - "drycc-prometheus"
+    extraMatchLabels:
+      app: "drycc-prometheus"
   # Service
   service:
     # Provide any additional service annotations
     annotations: {}
 
 ## node-exporter configuration##
-node-exporter:
+nodeExporter:
   enabled: true
   service:
     listenOnAllInterfaces: []
@@ -71,7 +69,7 @@ node-exporter:
 
 ## kube-state-metrics configuration
 ##
-kube-state-metrics:
+kubeStateMetrics:
   enabled: true
   nodeAffinityPreset:
     key: "drycc.cc/node"
@@ -79,15 +77,13 @@ kube-state-metrics:
     values:
     - "true"
   podAffinityPreset:
-    key: "security"
     type: ""
-    values:
-    - "drycc-security"
+    extraMatchLabels:
+      security: "drycc-security"
   podAntiAffinityPreset:
-    key: "app"
     type: "soft"
-    values:
-    - "drycc-kube-state-metrics"
+    extraMatchLabels:
+      app: "drycc-kube-state-metrics"
   # Service
   service:
     # Provide any additional service annotations

@@ -1,6 +1,6 @@
 {{- if eq .Values.global.prometheusLocation "on-cluster" }}
-{{- if (index .Values "kube-state-metrics" "enabled") }}
-{{- $collectors := (index .Values "kube-state-metrics" "collectors" ) }}
+{{- if (index .Values "kubeStateMetrics" "enabled") }}
+{{- $collectors := (index .Values "kubeStateMetrics" "collectors" ) }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
