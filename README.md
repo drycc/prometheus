@@ -16,14 +16,14 @@ The provided `Makefile` has various targets to help support building and publish
 ### Environment variables
 There are a few key environment variables you should be aware of when interacting with the `make` targets.
 
-* `BUILD_TAG` - The tag provided to the docker image when it is built (defaults to the git-sha)
+* `BUILD_TAG` - The tag provided to the container image when it is built (defaults to the git-sha)
 * `SHORT_NAME` - The name of the image (defaults to `grafana`)
 * `DRYCC_REGISTRY` - This is the registry you are using (default `dockerhub`)
 * `IMAGE_PREFIX` - This is the account for the registry you are using (default `drycc`)
 
 ### Make targets
 
-* `make build` - Build docker image
-* `make push` - Push docker image to a registry
+* `make build` - Build container image
+* `make push` - Push container image to a registry
 
 The typical workflow will look something like this - `DRYCC_REGISTRY= IMAGE_PREFIX=foouser make build push`
