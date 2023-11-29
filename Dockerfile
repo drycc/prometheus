@@ -29,8 +29,6 @@ RUN groupadd drycc --gid ${DRYCC_GID} \
       /var/cache/apk/* /root/.gem/ruby/*/cache/*.gem \
   && bash -c "mkdir -p /usr/share/man/man{1..8}"
 
-COPY rootfs /
-
 VOLUME ${DRYCC_HOME_DIR}
 
 USER ${DRYCC_UID}
