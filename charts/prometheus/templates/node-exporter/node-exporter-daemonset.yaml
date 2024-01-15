@@ -76,6 +76,11 @@ spec:
             - name: sys
               mountPath: /host/sys
               readOnly: true
+            {{- if (index .Values "nodeExporter" "hostRootFsMount" "enabled") }}
+            - mountPath: /host/root
+              mountPropagation: HostToContainer
+              name: root
+            {{- end }}
       hostNetwork: {{ index .Values "nodeExporter" "hostNetwork" }}
       hostPID: {{ index .Values "nodeExporter" "hostPID" }}
       volumes:
@@ -85,5 +90,11 @@ spec:
         - name: sys
           hostPath:
             path: /sys
+        {{- if (index .Values "nodeExporter" "hostRootFsMount" "enabled") }}
+        - hostPath:
+            path: /
+            type: ""
+          name: root
+        {{- end }}
 {{- end }}
 {{- end }}
