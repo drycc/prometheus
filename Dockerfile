@@ -4,9 +4,9 @@ FROM registry.drycc.cc/drycc/base:${CODENAME}
 ENV DRYCC_UID=1001 \
   DRYCC_GID=1001 \
   DRYCC_HOME_DIR=/data \
-  PROMETHEUS_VERSION="2.44.0" \
-  NODE_EXPORTER_VERSION="1.6.0" \
-  KUBE_STATE_METRICS="2.9.2"
+  PROMETHEUS_VERSION="2.55.1" \
+  NODE_EXPORTER_VERSION="1.8.2" \
+  KUBE_STATE_METRICS="2.13.0"
 
 RUN groupadd drycc --gid ${DRYCC_GID} \
   && useradd drycc -u ${DRYCC_UID} -g ${DRYCC_GID} -s /bin/bash -m -d ${DRYCC_HOME_DIR} \
