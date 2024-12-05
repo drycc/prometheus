@@ -25,18 +25,20 @@ spec:
         podAntiAffinity: {{- include "common.affinities.pods" (dict "type" .Values.prometheusServer.podAntiAffinityPreset.type "component" "" "extraMatchLabels" .Values.prometheusServer.podAntiAffinityPreset.extraMatchLabels "topologyKey" "" "context" $) | nindent 10 }}
         nodeAffinity: {{- include "common.affinities.nodes" (dict "type" ( index .Values "prometheusServer" "nodeAffinityPreset" "type") "key" ( index .Values "prometheusServer" "nodeAffinityPreset" "key") "values" ( index .Values "prometheusServer" "nodeAffinityPreset" "values" ) ) | nindent 10 }}
       containers:
-      - name: drycc-prometheus
+      - name: drycc-prometheus-main
         image: {{ .Values.imageRegistry }}/{{ .Values.imageOrg }}/prometheus:{{ .Values.imageTag }}
         imagePullPolicy: {{.Values.imagePullPolicy}}
         args:
           - prometheus
           - --web.route-prefix=/
-          - --storage.tsdb.retention.time={{ index .Values "prometheusServer" "retention" }}
-          - --config.file=/opt/drycc/prometheus/config/prometheus.yaml
+          - --web.listen-address=0.0.0.0:9090
+          - --web.enable-remote-write-receiver
           - --web.config.file=/opt/drycc/prometheus/config/web.yaml
-          - --storage.tsdb.path=/data
           - --web.console.libraries=/opt/drycc/console_libraries
           - --web.console.templates=/opt/drycc/prometheus/consoles
+          - --config.file=/opt/drycc/prometheus/config/main.yaml
+          - --storage.tsdb.path=/data/main
+          - --storage.tsdb.retention.time=30m
           {{- range (index .Values "prometheusServer" "extraFlags" ) }}
           - --{{ . }}
           {{- end }}
@@ -50,6 +52,72 @@ spec:
           {{- end }}
         ports:
         - containerPort: 9090
+          name: web
+          protocol: TCP
+        livenessProbe:
+          failureThreshold: 10
+          httpGet:
+            path: /-/healthy
+            port: web
+            scheme: HTTP
+            httpHeaders:
+            - name: Authorization
+              value: Basic {{ printf "%s:%s" .Values.username .Values.password | b64enc }}
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 3
+        readinessProbe:
+          failureThreshold: 10
+          httpGet:
+            path: /-/ready
+            port: web
+            scheme: HTTP
+            httpHeaders:
+            - name: Authorization
+              value: Basic {{ printf "%s:%s" .Values.username .Values.password | b64enc }}
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 3
+        resources: {}
+        startupProbe:
+          failureThreshold: 60
+          httpGet:
+            path: /-/ready
+            port: web
+            scheme: HTTP
+            httpHeaders:
+            - name: Authorization
+              value: Basic {{ printf "%s:%s" .Values.username .Values.password | b64enc }}
+          periodSeconds: 15
+          successThreshold: 1
+          timeoutSeconds: 3
+        volumeMounts:
+        - name: prometheus-config
+          readOnly: true
+          mountPath: /opt/drycc/prometheus/config
+        - name: prometheus-data
+          mountPath: /data
+      - name: drycc-prometheus-data
+        image: {{ .Values.imageRegistry }}/{{ .Values.imageOrg }}/prometheus:{{ .Values.imageTag }}
+        imagePullPolicy: {{.Values.imagePullPolicy}}
+        args:
+          - prometheus
+          - --web.route-prefix=/
+          - --web.listen-address=0.0.0.0:9091
+          - --web.config.file=/opt/drycc/prometheus/config/web.yaml
+          - --web.console.libraries=/opt/drycc/console_libraries
+          - --web.console.templates=/opt/drycc/prometheus/consoles
+          - --config.file=/opt/drycc/prometheus/config/data.yaml
+          - --storage.tsdb.path=/data/data
+          - --storage.tsdb.retention.time={{ index .Values "prometheusServer" "retention" }}
+          {{- range (index .Values "prometheusServer" "extraFlags" ) }}
+          - --{{ . }}
+          {{- end }}
+          {{- range $key, $value := (index .Values "prometheusServer" "extraArgs" ) }}
+          - --{{ $key }}={{ $value }}
+          {{- end }}
+        ports:
+        - containerPort: 9091
           name: web
           protocol: TCP
         livenessProbe:

@@ -7,10 +7,15 @@ metadata:
     heritage: drycc
 data:
   web.yaml: |
+    {{- if .Values.config.web }}
     {{- (tpl .Values.config.web $)  | nindent 4 }}
-  prometheus.yaml: |
-    {{- if .Values.config.prometheus }}
-    {{- (tpl .Values.config.prometheus $)  | nindent 4 }}
+    {{- else }}
+    basic_auth_users:
+      {{ htpasswd .Values.username .Values.password | replace ":" ": "}}
+    {{- end }}
+  main.yaml: |
+    {{- if .Values.config.main }}
+    {{- (tpl .Values.config.main $)  | nindent 4 }}
     {{- else }}
     global:
       ## How frequently to scrape targets by default
@@ -22,6 +27,16 @@ data:
       ## How frequently to evaluate rules
       ##
       evaluation_interval: 1m
+    remote_read:
+    {{- $replicaCount := .Values.prometheusServer.replicas | int }}
+    {{- range $i := until $replicaCount }}
+      - url: {{printf "http://drycc-prometheus-%d.drycc-prometheus.%s.svc.%s:9091/api/v1/read" $i $.Release.Namespace $.Values.global.clusterDomain}}
+        {{- if and ($.Values.username) ($.Values.password) }}
+        basic_auth:
+          username: {{ $.Values.username }}
+          password: {{ $.Values.password }}
+        {{- end }}
+    {{- end }}
     scrape_configs:
       - job_name: prometheus
         {{- if and (.Values.username) (.Values.password) }}
@@ -32,6 +47,38 @@ data:
         static_configs:
           - targets:
             - localhost:9090
+    {{- end }}
+  data.yaml: |
+    {{- if .Values.config.data }}
+    {{- (tpl .Values.config.data $)  | nindent 4 }}
+    {{- else }}
+    global: 
+      ## How frequently to scrape targets by default
+      ##
+      scrape_interval: 1m
+      ## How long until a scrape request times out
+      ##
+      scrape_timeout: 10s
+      ## How frequently to evaluate rules
+      ##
+      evaluation_interval: 1m
+    remote_write:
+      - url: http://localhost:9090/api/v1/write
+        {{- if and ($.Values.username) ($.Values.password) }}
+        basic_auth:
+          username: {{ $.Values.username }}
+          password: {{ $.Values.password }}
+        {{- end }}
+    scrape_configs:
+      - job_name: prometheus
+        {{- if and (.Values.username) (.Values.password) }}
+        basic_auth:
+          username: {{ .Values.username }}
+          password: {{ .Values.password }}
+        {{- end }}
+        static_configs:
+          - targets:
+            - localhost:9091
       # A scrape configuration for running Prometheus on a Kubernetes cluster.
       # This uses separate scrape configs for cluster components (i.e. API server, node)
       # and services to allow each to use different authentication configs.

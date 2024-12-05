@@ -12,13 +12,12 @@ password: "admin"
 
 ## https://docs.fluentbit.io/manual/administration/configuring-fluent-bit/classic-mode/configuration-file
 config:
-  web: |
-    basic_auth_users:
-      {{ htpasswd .Values.username .Values.password | replace ":" ": "}}
-  prometheus: ""
+  web: ""
+  main: ""
+  data: ""
 ## prometheus-server configuration##
 prometheusServer:
-  replicas: 1
+  replicas: 2
   retention: 15d
   # persistence config
   persistence:
