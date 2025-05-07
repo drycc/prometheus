@@ -1,4 +1,3 @@
-{{- if eq .Values.global.prometheusLocation "on-cluster" }}
 {{- $platformDomain := .Values.global.platformDomain }}
 apiVersion: apps/v1
 kind: StatefulSet
@@ -187,4 +186,3 @@ spec:
         requests:
           storage: {{ (index .Values "prometheusServer" "persistence" "size") | quote }}
   {{- end }}
-{{- end }}

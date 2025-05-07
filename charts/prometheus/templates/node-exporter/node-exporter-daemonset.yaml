@@ -1,4 +1,3 @@
-{{- if eq .Values.global.prometheusLocation "on-cluster" }}
 {{- if (index .Values "nodeExporter" "enabled") }}
 apiVersion: apps/v1
 kind: DaemonSet
@@ -96,5 +95,4 @@ spec:
             type: ""
           name: root
         {{- end }}
-{{- end }}
 {{- end }}
