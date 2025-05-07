@@ -157,8 +157,6 @@ global:
   # - gcs: Store persistent data in Google Cloud Storage
   # - minio: Store persistent data on in-cluster Minio server
   storage: minio
-  #
-  rbac: false
   # A domain name consists of one or more parts.
   # Periods (.) are used to separate these parts.
   # Each part must be 1 to 63 characters in length and can contain lowercase letters, digits, and hyphens (-).
