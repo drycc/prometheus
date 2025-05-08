@@ -51,13 +51,12 @@ spec:
           {{- end }}
         ports:
         - containerPort: 9090
-          name: web
           protocol: TCP
         livenessProbe:
           failureThreshold: 10
           httpGet:
             path: /-/healthy
-            port: web
+            port: 9090
             scheme: HTTP
             httpHeaders:
             - name: Authorization
@@ -69,7 +68,7 @@ spec:
           failureThreshold: 10
           httpGet:
             path: /-/ready
-            port: web
+            port: 9090
             scheme: HTTP
             httpHeaders:
             - name: Authorization
@@ -82,7 +81,7 @@ spec:
           failureThreshold: 60
           httpGet:
             path: /-/ready
-            port: web
+            port: 9090
             scheme: HTTP
             httpHeaders:
             - name: Authorization
@@ -117,13 +116,12 @@ spec:
           {{- end }}
         ports:
         - containerPort: 9091
-          name: web
           protocol: TCP
         livenessProbe:
           failureThreshold: 10
           httpGet:
             path: /-/healthy
-            port: web
+            port: 9091
             scheme: HTTP
             httpHeaders:
             - name: Authorization
@@ -135,7 +133,7 @@ spec:
           failureThreshold: 10
           httpGet:
             path: /-/ready
-            port: web
+            port: 9091
             scheme: HTTP
             httpHeaders:
             - name: Authorization
@@ -148,7 +146,7 @@ spec:
           failureThreshold: 60
           httpGet:
             path: /-/ready
-            port: web
+            port: 9091
             scheme: HTTP
             httpHeaders:
             - name: Authorization
